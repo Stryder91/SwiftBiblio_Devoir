@@ -1,0 +1,14 @@
+class Sujet {
+    var nom: String = "Swift"
+    var tag: [String] = [Tag]
+    var url: [String] = [Url]
+}
+
+class Tag {
+    var nom: String = "dev",
+    var sujet: [String] = [Sujet]
+}
+
+class Url {
+    var lien: String = "https://swift.org/",
+}

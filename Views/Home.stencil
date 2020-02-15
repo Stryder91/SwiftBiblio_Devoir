@@ -1,0 +1,19 @@
+<html>
+    <head>
+    <meta charset="UTF-8">
+    <link href="/style.css" rel="stylesheet">
+    <link href="/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body>
+        <section>
+            <h1 class="text-center">Liste des sujets</h1>
+            <ul>
+                {% for element in list %}
+                <a href="/eleves/{{eleve}}">
+                    <li>{{ element.Topic.name }}</li>
+                </a>
+                {% endfor %}
+            </ul>
+        </section>
+    </body>
+</html>

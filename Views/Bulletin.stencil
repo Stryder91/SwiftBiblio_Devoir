@@ -1,0 +1,21 @@
+<html>
+    <head>
+    <meta charset="UTF-8">
+    <link href="/style.css" rel="stylesheet">
+    </head>
+    <body>
+        <section>
+            <h1> Les notes de l'élève {{ eleve }}</h1>
+            <ul>
+            {% for note in bulletin %}
+                <li>{{ note }}</li>
+            {% endfor %}
+            </ul>
+            <div>
+                <p>La moyenne est de : {{moyenne}} </p>
+                <p>La médiane est de : {{mediane}} </p>
+                <p>L'écart-type est de : {{ecart_type}} </p>
+            </div>
+        </section>
+    </body>
+</html>

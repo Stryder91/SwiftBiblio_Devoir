@@ -1,0 +1,19 @@
+<html>
+    <head>
+    <meta charset="UTF-8">
+    <link href="/style.css" rel="stylesheet">
+    <link href="/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body>
+        <section>
+            <h1 class="text-center"> Créez votre sujet</h1>
+            <form action="/" method="post">
+                <input name="sujet" placeholder="Choisissez un sujet" />
+                <input name="tag" placeholder="Choisissez un tag" />
+                <input name="url" placeholder="Choisissez un URL" />
+                <button type="submit" class="btn btn-success">GO</button>
+            </form>
+        </section>
+    </body>
+</html>
+        
