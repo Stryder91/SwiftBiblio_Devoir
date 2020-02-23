@@ -12,7 +12,7 @@ let package = Package(
         .package(url: "https://github.com/IBM-Swift/Kitura-StencilTemplateEngine", from:"1.11.1"),
         .package(url: "https://github.com/IBM-Swift/Swift-Kuery.git", from: "3.0.1"),
         .package(url: "https://github.com/IBM-Swift/Swift-Kuery-ORM.git", from: "0.0.1"),
-        .package(url: "https://github.com/IBM-Swift/Swift-Kuery-SQLite.git", from: "2.0.1")
+        .package(url: "https://github.com/IBM-Swift/Swift-Kuery-SQLite.git", from: "2.0.1"),
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.

@@ -4,6 +4,7 @@ import KituraStencil
 
 import Foundation
 
+import SwiftKuery
 import SwiftKueryORM
 import SwiftKuerySQLite
 
@@ -11,96 +12,172 @@ HeliumLogger.use()
 
 let router = Router()
 
-router.all(middleware: BodyParser())
 router.all(middleware: [BodyParser(), StaticFileServer(path: "./Public")])
 router.add(templateEngine: StencilTemplateEngine())
 
+// SQL version qui marche pas ...
+// let pool = SQLiteConnection.createPool(host: "localhost", port: 5432, options: [databaseName("database")], poolOptions: ConnectionPoolOptions(initialCapacity: 10, maxCapacity: 50))
 
+// ORM
 let pool = SQLiteConnection.createPool(filename: "datatabase.db", poolOptions: ConnectionPoolOptions(initialCapacity: 10, maxCapacity: 30))
 Database.default = Database(pool)
 pool.getConnection() { connection, error in
     guard let connection = connection else {
         // Handle error
+        print("connection")
         return
     }
     // Use connection
 }
-
-
 struct Topic: Codable {
-  var name: String
-  var tags: String
-  var urls: String
+  var nameTopic: String
+  var content: String
+
 }
-extension Topic: Model { }
+struct Tag: Codable {
+    var nameTag: String
+    var refTopic: String
+}
+struct Url: Codable {
+    var nameUrl: String
+    var refTopic: String
+}
+extension Topic: Model { 
+     public static func getTopic() -> [Topic]? {
+        let wait = DispatchSemaphore(value: 0)
+        // First get the table
+        var table: Table
+        do {
+            table = try Topic.getTable()
+        } catch {
+            // Handle error
+        }
+        // Define result, query and execute
+        var myResult: [Topic]? = nil
+        let query = Select(from: table).where("nameTopic == Python")
+
+        Topic.executeQuery(query: query, parameters: nil) { results, error in
+            guard let results = results else {
+                // Handle error
+            }
+            myResult = results
+            wait.signal()
+            return
+        }
+        wait.wait()
+        return myResult
+    }
+}
+extension Tag: Model { }
+extension Url: Model { }
 
 router.get("/") { request, response, next in
-    var myTopic: Topic;
-    var myResult: [Topic] = [];
+    
+    //On crée nos tables, ne s'écrasent pas.
+    do {
+        try Topic.createTableSync()
+    } catch let error {
+        // Error
+    }
+    do {
+        try Tag.createTableSync()
+    } catch let error {
+        // Error
+    }
+    do {
+        try Url.createTableSync()
+    } catch let error {
+        // Error
+    }
+    //Détruire une table
+    // Tag.deleteAll { error in
+    // print("ERREUR DELETING", error)
+    // }
+    // Tag.delete(id: 1) { error in
+    // print("DELETING BY ID", error)
+    // }
+    
+    //Bloc d'instanciation en dur
+    // let tag = Tag(nameTag: "ML", refTopic: "Python")
+    // tag.save { tag, error in
+    //     print("save \(tag), \(error)")
+    // }
+    // let topic = Topic(nameTopic: "Swift", content: "Swift is a powerful and intuitive programming language for macOS, iOS, watchOS, tvOS and beyond. Writing Swift code is interactive and fun, the syntax is concise yet expressive, and Swift includes modern features developers love. Swift code is safe by design, yet also produces software that runs lightning-fast.")
+    // topic.save { topic, error in
+    //     print("save, \(error)")
+    // }
+
+    //Pour tout prendre et vérifier les manip Query en dur
+    // do {
+    //     Tag.findAll { (result: [Tag]?, error: RequestError?) in
+    //         print("Result find : \(result)")
+    //         for element in result! {
+    //             print("LOOP", element)
+    //         }
+    //     }
+    // }   
+
+    ///////// Query sur la liste des topics
     do {
         Topic.findAll { (result: [Topic]?, error: RequestError?) in
-            print("Result en vrac: \(result)")
-            myResult = result!;
-            // for topic in result! {
-            //     print("Result",topic)
-            // }
-        print("MY INNER\(myResult)")
-        try response.render("Home.stencil", context: ["greeting" : "Bienvenue dans la bibliographie", "list": "myResult"])
-        }
-    } catch let error {
-        print("Il y a un erreur : \(error)")
-    }
-    print("MY Out\(myResult)")
-    next()
-}
-router.post("/") { request, response, next in
-    if let body = request.body?.asURLEncoded { 
-        if let sujet = body["sujet"]{
-        let myTag: String = body["tag"] ?? ""
-        do {
-            let topic = try Topic(name: sujet, tags: myTag, urls:"Urls")
-            topic.save { topic, error in
+
+            print("Result find : \(result)")
+            for element in result! {
+                print("LOOP", element.nameTopic)
             }
-        } catch let error {
-            print("Il y a un erreur : \(error)")
+            do {
+                try response.render("Home.stencil", 
+                    context: ["greeting" : "Bienvenue dans la bibliographie", "list":result ?? [] ])
+            } catch {
+                print("le render n'a pas marche")
+            }
         }
-        try response.render("Home.stencil", context: ["sujet" : sujet, "tags": myTag])
-        }
+    }   
     next()
+}
+
+router.get("/topic/:myTopic") { request, response, next in
+    if let topic = request.parameters["myTopic"]{
+        
+        // Tag.findAll() { result, error in
+        //     print("Result find : \(result)")
+        //     for element in result! {
+        //         print("LOOP II", element)
+        //     }
+        //     do {
+        //         try response.render("Sujet.stencil", 
+        //             context: ["topic": topic , "list":result ?? "" ])
+        //     } catch {
+        //         print("le render n'a pas marche")
+        //     }
+        // }
+    var myTest = Topic.getTopic() 
+    print("MY TEST", myTest)
+    try response.render("Sujet.stencil", 
+                        context: ["topic": topic ])
     }
     else {
-       response.status(.notFound)
-    }
-    next()
-    
-}
-
-router.post("/topic") { request, response, next in
-    if let body = request.body?.asURLEncoded { 
-        if let sujet = body["sujet"]{
-        try response.render("Sujet.stencil", context: ["sujet" : sujet])
-        }
-    next()
-    }
-    else {
-       response.status(.notFound)
+        response.status(.notFound)
     }
     next()
 }
 
-router.get("/create") { request, response, next in
-    try response.render("Create.stencil", context: ["title" : "Creez un sujet"])
-    next()
-}
+// router.get("/create") { request, response, next in
+//     try response.render("Create.stencil", context: ["title" : "Creez un sujet"])
+//     next()
+// }
 
 
-router.get("/eleves/:name") { request, response, next in
+// router.post("/") { request, response, next in
+//     if let body = request.body?.asURLEncoded { 
+//      //
+//     }
+//     else {
+//        response.status(.notFound)
+//     }
+//     next()
+// }
 
-
-    if let name = request.parameters["name"]{
-
-    }
-}
 
 Kitura.addHTTPServer(onPort: 8080, with: router)
 Kitura.run()

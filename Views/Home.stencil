@@ -6,11 +6,12 @@
     </head>
     <body>
         <section>
-            <h1 class="text-center">Liste des sujets</h1>
+            <h1 class="text-center">Liste des sujets {{greeting}}</h1>
             <ul>
                 {% for element in list %}
-                <a href="/eleves/{{eleve}}">
-                    <li>{{ element.Topic.name }}</li>
+                <a href="/topic/{{element.nameTopic}}">
+                    <li>{{ element.nameTopic }}</li>
+                    <p>{{ element.content }}</p>
                 </a>
                 {% endfor %}
             </ul>

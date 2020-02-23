@@ -5,7 +5,9 @@
     </head>
     <body>
         <section>
-            <h1> Sujet {{sujet}} </h1>
+            <h1> Sujet du jour : {{topic}} </h1>
+            <p> Tags : {{tags}} </p>
+            <p> Contenu du sujet .... </p>
         </section>
     </body>
 </html>
