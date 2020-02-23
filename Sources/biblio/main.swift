@@ -18,7 +18,7 @@ router.add(templateEngine: StencilTemplateEngine())
 // SQL version qui marche pas ...
 // let pool = SQLiteConnection.createPool(host: "localhost", port: 5432, options: [databaseName("database")], poolOptions: ConnectionPoolOptions(initialCapacity: 10, maxCapacity: 50))
 
-// ORM
+// ORM connexion à la BDD
 let pool = SQLiteConnection.createPool(filename: "datatabase.db", poolOptions: ConnectionPoolOptions(initialCapacity: 10, maxCapacity: 30))
 Database.default = Database(pool)
 pool.getConnection() { connection, error in
@@ -43,6 +43,9 @@ struct Url: Codable {
     var refTopic: String
 }
 extension Topic: Model { 
+    
+    // Fonction sensé nous permettre de récupérer un topic avec un "where" SQL, dont le nom vaut == "Python" par exemple, mais pas réussi.
+    // Le problème vient de "Table", nous retourne la variable qui est utilisé avant d'être instancié.
      public static func getTopic() -> [Topic]? {
         let wait = DispatchSemaphore(value: 0)
         // First get the table
@@ -76,19 +79,12 @@ router.get("/") { request, response, next in
     //On crée nos tables, ne s'écrasent pas.
     do {
         try Topic.createTableSync()
-    } catch let error {
-        // Error
-    }
-    do {
         try Tag.createTableSync()
-    } catch let error {
-        // Error
-    }
-    do {
         try Url.createTableSync()
     } catch let error {
         // Error
     }
+                 
     //Détruire une table
     // Tag.deleteAll { error in
     // print("ERREUR DELETING", error)
@@ -139,6 +135,7 @@ router.get("/") { request, response, next in
 router.get("/topic/:myTopic") { request, response, next in
     if let topic = request.parameters["myTopic"]{
         
+        // On chercher à récuperer des tags en fonction du nom du topic passé en paramètre
         // Tag.findAll() { result, error in
         //     print("Result find : \(result)")
         //     for element in result! {
@@ -151,6 +148,8 @@ router.get("/topic/:myTopic") { request, response, next in
         //         print("le render n'a pas marche")
         //     }
         // }
+        
+    //Appel de la méthode de l'extension du Topic 
     var myTest = Topic.getTopic() 
     print("MY TEST", myTest)
     try response.render("Sujet.stencil", 
